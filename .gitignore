@@ -1,0 +1,47 @@
+# Testing/QA docs
+.testing/
+.claude/
+
+# Credentials
+coder-deploy.env
+
+# Terraform/Terragrunt - Local directories
+**/.terraform/*
+**/.terragrunt-cache/*
+
+# Terragrunt - Generated files (environment-specific)
+**/backend.tf
+**/provider.tf
+
+# Terraform - .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Terraform - Crash log files
+crash.log
+crash.*.log
+
+# Terraform - Exclude all .tfvars files (may contain secrets)
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Terraform - Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform - CLI configuration files
+.terraformrc
+terraform.rc
+
+# Terraform - Lock file (include in version control per HashiCorp recommendation)
+# .terraform.lock.hcl
+
+# Terragrunt - Deployment logs
+terragrunt-*.out
+
+# OS
+.DS_Store
+**/.terraform.lock.hcl
