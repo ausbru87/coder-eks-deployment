@@ -124,6 +124,28 @@ variable "github_allowed_orgs" {
   description = "GitHub organization(s) allowed for OAuth login"
 }
 
+# =============================================================================
+# Grafana GitHub OAuth (optional)
+# =============================================================================
+variable "grafana_github_oauth_client_id" {
+  type        = string
+  description = "GitHub OAuth App client ID for Grafana"
+  default     = ""
+}
+
+variable "grafana_github_oauth_client_secret" {
+  type        = string
+  sensitive   = true
+  description = "GitHub OAuth App client secret for Grafana"
+  default     = ""
+}
+
+variable "grafana_github_allowed_orgs" {
+  type        = string
+  description = "Comma-separated list of GitHub organizations allowed to access Grafana"
+  default     = ""
+}
+
 variable "coder_version" {
   type        = string
   description = "Coder Helm chart version"
@@ -204,6 +226,11 @@ module "observability" {
   grafana_domain      = var.grafana_domain
   acm_certificate_arn = var.acm_certificate_arn
   route53_zone_id     = var.route53_zone_id
+
+  # Grafana GitHub OAuth (optional)
+  grafana_github_oauth_enabled = var.grafana_github_oauth_client_id != ""
+  grafana_github_allowed_orgs  = var.grafana_github_allowed_orgs
+  grafana_root_url             = var.grafana_domain != "" ? "https://${var.grafana_domain}" : ""
 
   depends_on = [module.coder]
 }

@@ -114,7 +114,7 @@ cd 02-apps && terragrunt apply -auto-approve
 <details>
 <summary>Terragrunt CLI Reference</summary>
 
-The new Terragrunt CLI redesign changed command syntax:
+This repo uses the new Terragrunt CLI syntax (v0.50+):
 
 | Old | New |
 |-----|-----|
@@ -227,6 +227,39 @@ coder templates push ec2
 | `coder-workspaces` | Kubernetes workspace pods |
 | `coder-observability` | Grafana, Prometheus, Loki |
 | `external-secrets` | External Secrets Operator |
+
+## Grafana GitHub SSO (Optional)
+
+To secure Grafana with GitHub OAuth (recommended for production):
+
+### 1. Create a GitHub OAuth App
+
+- Go to [GitHub Developer Settings](https://github.com/settings/developers) → "New OAuth App"
+- **Application name:** `Grafana - <environment>`
+- **Homepage URL:** `https://<grafana_domain>`
+- **Authorization callback URL:** `https://<grafana_domain>/login/github`
+
+### 2. Configure Credentials
+
+Add to `coder-deploy.env`:
+
+```bash
+export TF_VAR_grafana_github_oauth_client_id="Ov23li..."
+export TF_VAR_grafana_github_oauth_client_secret="..."
+export TF_VAR_grafana_github_allowed_orgs="coder"  # restrict to org members
+```
+
+### 3. Deploy (or Re-deploy)
+
+```bash
+source coder-deploy.env
+cd 02-apps && terragrunt apply
+```
+
+Users must be members of the specified GitHub organization(s) to access Grafana.
+
+> **Note:** If `TF_VAR_grafana_github_oauth_client_id` is empty, Grafana defaults to
+> anonymous access (not recommended for production).
 
 ## Cost Estimate (Monthly)
 

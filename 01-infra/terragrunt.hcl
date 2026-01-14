@@ -4,7 +4,7 @@
 # Prerequisites: Run scripts/create-tfstate-backend.sh first
 
 include "root" {
-  path = find_in_parent_folders("root.hcl")
+  path = find_in_parent_folders()
 }
 
 # No terraform.source block - run in place to preserve relative module paths

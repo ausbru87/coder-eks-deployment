@@ -295,11 +295,11 @@ resource "aws_security_group" "workspace" {
 # EC2 Instance
 # =============================================================================
 resource "aws_instance" "dev" {
-  ami               = data.aws_ami.ubuntu.id
-  instance_type     = data.coder_parameter.instance_type.value
-  subnet_id         = data.aws_subnets.private.ids[0]
-  user_data         = data.cloudinit_config.user_data.rendered
-  
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = data.coder_parameter.instance_type.value
+  subnet_id     = data.aws_subnets.private.ids[0]
+  user_data     = data.cloudinit_config.user_data.rendered
+
   vpc_security_group_ids = [aws_security_group.workspace.id]
 
   root_block_device {

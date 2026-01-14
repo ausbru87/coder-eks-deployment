@@ -581,7 +581,7 @@ resource "aws_iam_role_policy" "cluster_autoscaler" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "aws:ResourceTag/k8s.io/cluster-autoscaler/enabled"    = "true"
+            "aws:ResourceTag/k8s.io/cluster-autoscaler/enabled"     = "true"
             "aws:ResourceTag/k8s.io/cluster-autoscaler/${var.name}" = "owned"
           }
         }

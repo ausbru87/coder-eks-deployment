@@ -41,7 +41,7 @@ variable "coder_token" {
   description = "Coder API token (create with: coder tokens create --lifetime 8760h)"
   type        = string
   sensitive   = true
-  default     = ""  # Set via CODER_TOKEN env var
+  default     = "" # Set via CODER_TOKEN env var
 }
 
 variable "coder_namespace" {

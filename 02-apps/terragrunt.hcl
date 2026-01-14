@@ -4,7 +4,7 @@
 # Depends on: 01-infra
 
 include "root" {
-  path = find_in_parent_folders("root.hcl")
+  path = find_in_parent_folders()
 }
 
 dependency "infra" {
@@ -43,4 +43,9 @@ inputs = {
   route53_zone_id           = dependency.infra.outputs.route53_zone_id
   acm_certificate_arn       = dependency.infra.outputs.acm_certificate_arn
   github_oauth_secret_arn   = dependency.infra.outputs.github_oauth_secret_arn
+
+  # Grafana GitHub OAuth (optional - passed via environment variables)
+  grafana_github_oauth_client_id     = get_env("TF_VAR_grafana_github_oauth_client_id", "")
+  grafana_github_oauth_client_secret = get_env("TF_VAR_grafana_github_oauth_client_secret", "")
+  grafana_github_allowed_orgs        = get_env("TF_VAR_grafana_github_allowed_orgs", "")
 }

@@ -39,6 +39,24 @@ variable "route53_zone_id" {
   description = "Route53 hosted zone ID for DNS records"
 }
 
+variable "grafana_github_oauth_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable GitHub OAuth for Grafana"
+}
+
+variable "grafana_github_allowed_orgs" {
+  type        = string
+  default     = ""
+  description = "Comma-separated list of GitHub orgs allowed to access Grafana"
+}
+
+variable "grafana_root_url" {
+  type        = string
+  default     = ""
+  description = "Root URL for Grafana (required for OAuth callbacks)"
+}
+
 # =============================================================================
 # Namespace
 # =============================================================================
@@ -95,6 +113,57 @@ resource "helm_release" "postgres_external_secret" {
   })]
 }
 
+# Grafana GitHub OAuth secret (optional)
+resource "helm_release" "grafana_github_oauth_secret" {
+  count      = var.grafana_github_oauth_enabled ? 1 : 0
+  name       = "grafana-github-oauth-secret"
+  namespace  = kubernetes_namespace.observability.metadata[0].name
+  repository = "https://bedag.github.io/helm-charts"
+  chart      = "raw"
+  version    = "2.0.0"
+
+  depends_on = [kubernetes_namespace.observability]
+
+  values = [yamlencode({
+    resources = [
+      {
+        apiVersion = "external-secrets.io/v1beta1"
+        kind       = "ExternalSecret"
+        metadata = {
+          name      = "grafana-github-oauth"
+          namespace = "coder-observability"
+        }
+        spec = {
+          refreshInterval = "1h"
+          secretStoreRef = {
+            name = "aws-secrets-manager"
+            kind = "ClusterSecretStore"
+          }
+          target = {
+            name = "grafana-github-oauth"
+          }
+          data = [
+            {
+              secretKey = "GF_AUTH_GITHUB_CLIENT_ID"
+              remoteRef = {
+                key      = "${var.name}/grafana-github-oauth"
+                property = "client_id"
+              }
+            },
+            {
+              secretKey = "GF_AUTH_GITHUB_CLIENT_SECRET"
+              remoteRef = {
+                key      = "${var.name}/grafana-github-oauth"
+                property = "client_secret"
+              }
+            },
+          ]
+        }
+      }
+    ]
+  })]
+}
+
 resource "helm_release" "coder_observability" {
   name       = "coder-observability"
   repository = "https://helm.coder.com/observability"
@@ -104,7 +173,8 @@ resource "helm_release" "coder_observability" {
 
   depends_on = [
     kubernetes_namespace.observability,
-    helm_release.postgres_external_secret
+    helm_release.postgres_external_secret,
+    helm_release.grafana_github_oauth_secret,
   ]
 
   values = [yamlencode({
@@ -145,6 +215,39 @@ resource "helm_release" "coder_observability" {
       service = {
         enabled = var.grafana_domain == ""
       }
+      # Inject GitHub OAuth secrets as environment variables (when enabled)
+      envFromSecrets = var.grafana_github_oauth_enabled ? [{
+        name     = "grafana-github-oauth"
+        optional = false
+      }] : []
+      "grafana.ini" = merge(
+        # Server config (required for OAuth callbacks)
+        var.grafana_root_url != "" ? {
+          server = {
+            root_url = var.grafana_root_url
+          }
+        } : {},
+        # Anonymous access disabled by default
+        {
+          "auth.anonymous" = {
+            enabled = false
+          }
+        },
+        # GitHub OAuth config (when enabled)
+        var.grafana_github_oauth_enabled ? {
+          "auth.github" = {
+            enabled               = true
+            allow_sign_up         = true
+            auto_login            = false
+            scopes                = "user:email,read:org"
+            auth_url              = "https://github.com/login/oauth/authorize"
+            token_url             = "https://github.com/login/oauth/access_token"
+            api_url               = "https://api.github.com/user"
+            allowed_organizations = var.grafana_github_allowed_orgs
+            # client_id and client_secret come from GF_AUTH_GITHUB_* env vars
+          }
+        } : {}
+      )
     }
     # Loki: SingleBinary mode for demo environments (no S3 required)
     # For production scale, switch to S3-backed distributed mode
