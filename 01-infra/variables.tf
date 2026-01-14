@@ -52,3 +52,25 @@ variable "github_allowed_orgs" {
   description = "GitHub organization(s) allowed for OAuth login (comma-separated)"
   type        = string
 }
+
+# =============================================================================
+# Grafana GitHub OAuth (optional - enables SSO for Grafana)
+# =============================================================================
+variable "grafana_github_oauth_client_id" {
+  type        = string
+  description = "GitHub OAuth App client ID for Grafana (create at github.com/settings/developers)"
+  default     = ""
+}
+
+variable "grafana_github_oauth_client_secret" {
+  type        = string
+  sensitive   = true
+  description = "GitHub OAuth App client secret for Grafana"
+  default     = ""
+}
+
+variable "grafana_github_allowed_orgs" {
+  type        = string
+  description = "Comma-separated list of GitHub organizations allowed to access Grafana"
+  default     = ""
+}

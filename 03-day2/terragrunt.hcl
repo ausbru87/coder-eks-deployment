@@ -10,7 +10,7 @@
 # Requires: CODER_TOKEN environment variable
 
 include "root" {
-  path = find_in_parent_folders("root.hcl")
+  path = find_in_parent_folders()
 }
 
 # Skip if CODER_TOKEN not set - user must create admin user first

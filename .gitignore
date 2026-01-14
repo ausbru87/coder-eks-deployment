@@ -45,3 +45,7 @@ terragrunt-*.out
 # OS
 .DS_Store
 **/.terraform.lock.hcl
+
+# AWS CLI installation
+aws/
+awscliv2.zip

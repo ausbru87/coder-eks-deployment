@@ -68,6 +68,22 @@ resource "aws_secretsmanager_secret_version" "github_oauth" {
   })
 }
 
+# Grafana GitHub OAuth (optional)
+resource "aws_secretsmanager_secret" "grafana_github_oauth" {
+  count                   = var.grafana_github_oauth_client_id != "" ? 1 : 0
+  name                    = "${local.name}/grafana-github-oauth"
+  recovery_window_in_days = 0
+}
+
+resource "aws_secretsmanager_secret_version" "grafana_github_oauth" {
+  count     = var.grafana_github_oauth_client_id != "" ? 1 : 0
+  secret_id = aws_secretsmanager_secret.grafana_github_oauth[0].id
+  secret_string = jsonencode({
+    client_id     = var.grafana_github_oauth_client_id
+    client_secret = var.grafana_github_oauth_client_secret
+  })
+}
+
 # =============================================================================
 # ACM Certificate + DNS Validation
 # =============================================================================

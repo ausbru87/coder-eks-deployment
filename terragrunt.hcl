@@ -3,15 +3,15 @@
 #
 # Usage:
 #   source coder-deploy.env
-#   terragrunt run-all apply
+#   terragrunt run --all -- apply
 #
 # Environment prefix (optional):
 #   export TF_VAR_env_name="myenv"   # Resources prefixed as myenv-coder-demo
 #
 # Stages execute in dependency order:
-#   01-bootstrap -> 02-infra -> 03-apps -> 04-day2
+#   01-infra -> 02-apps -> 03-day2
 #
-# Note: 04-day2 requires CODER_TOKEN (auto-skipped if not set)
+# Note: 03-day2 requires CODER_TOKEN (auto-skipped if not set)
 
 locals {
   # Common tags applied to all resources

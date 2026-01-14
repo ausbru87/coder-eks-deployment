@@ -394,8 +394,8 @@ else
   echo "⚠️  Table may already exist, continuing..."
 fi
 
-# Append to env file if not already there
-if ! grep -q "TF_VAR_tfstate_bucket" "$ENV_FILE" 2>/dev/null; then
+# Append to env file if not already there (only match uncommented export lines)
+if ! grep -q "^export TF_VAR_tfstate_bucket=" "$ENV_FILE" 2>/dev/null; then
   echo "" >> "$ENV_FILE"
   echo "# Terraform State Backend (auto-generated)" >> "$ENV_FILE"
   echo "export TF_VAR_tfstate_bucket=\"$BUCKET_NAME\"" >> "$ENV_FILE"

@@ -259,15 +259,15 @@ resource "kubernetes_deployment_v1" "main" {
         }
 
         security_context {
-          run_as_user  = 1000
-          fs_group     = 1000
+          run_as_user     = 1000
+          fs_group        = 1000
           run_as_non_root = true
         }
 
         container {
           name  = "dev"
           image = data.coder_parameter.image.value
-          
+
           command = ["sh", "-c", coder_agent.main.init_script]
 
           env {
