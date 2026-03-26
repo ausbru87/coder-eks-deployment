@@ -18,6 +18,12 @@ variable "namespace" {
   default     = "coder-workspaces"
 }
 
+variable "auto_mode" {
+  type        = bool
+  description = "Whether the cluster uses EKS Auto Mode (affects storage class selection)"
+  default     = true
+}
+
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
 
@@ -203,8 +209,9 @@ resource "kubernetes_persistent_volume_claim_v1" "home" {
   }
   wait_until_bound = false
   spec {
-    access_modes       = ["ReadWriteOnce"]
-    storage_class_name = "gp3"
+    access_modes = ["ReadWriteOnce"]
+    # Use ebs-auto for EKS Auto Mode, gp3 for standard managed node groups
+    storage_class_name = var.auto_mode ? "ebs-auto" : "gp3"
     resources {
       requests = {
         storage = "${data.coder_parameter.home_disk_size.value}Gi"
@@ -253,9 +260,16 @@ resource "kubernetes_deployment_v1" "main" {
       }
 
       spec {
-        # Run on workspace nodes
+        # Run on workspace nodes (works with both Auto Mode custom NodePool and standard node groups)
         node_selector = {
           "coder.com/workspaces" = "true"
+        }
+
+        toleration {
+          key      = "coder.com/workspaces"
+          operator = "Equal"
+          value    = "true"
+          effect   = "NoSchedule"
         }
 
         security_context {

@@ -74,3 +74,12 @@ variable "grafana_github_allowed_orgs" {
   description = "Comma-separated list of GitHub organizations allowed to access Grafana"
   default     = ""
 }
+
+# =============================================================================
+# EKS Mode
+# =============================================================================
+variable "auto_mode" {
+  description = "Enable EKS Auto Mode. Set to false for managed node groups (required for envbox/Sysbox/DinD)."
+  type        = bool
+  default     = true
+}

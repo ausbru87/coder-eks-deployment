@@ -30,6 +30,31 @@ variable "auto_mode" {
   default     = true
 }
 
+# Standard node group settings (used when auto_mode = false)
+variable "node_instance_types" {
+  description = "Instance types for the managed node group (standard mode)"
+  type        = list(string)
+  default     = ["m5.xlarge"]
+}
+
+variable "node_desired_size" {
+  description = "Desired number of nodes in the managed node group"
+  type        = number
+  default     = 2
+}
+
+variable "node_min_size" {
+  description = "Minimum number of nodes in the managed node group"
+  type        = number
+  default     = 1
+}
+
+variable "node_max_size" {
+  description = "Maximum number of nodes in the managed node group"
+  type        = number
+  default     = 10
+}
+
 # Data sources
 data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
@@ -200,4 +225,115 @@ resource "aws_iam_role_policy_attachment" "node_cni" {
 resource "aws_iam_role_policy_attachment" "node_ecr" {
   policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.node.name
+}
+
+# =============================================================================
+# Managed Node Group (when Auto Mode is disabled)
+# =============================================================================
+
+resource "aws_eks_node_group" "default" {
+  count = var.auto_mode ? 0 : 1
+
+  cluster_name    = aws_eks_cluster.main.name
+  node_group_name = "${var.name}-default"
+  node_role_arn   = aws_iam_role.node.arn
+  subnet_ids      = var.private_subnet_ids
+
+  instance_types = var.node_instance_types
+  capacity_type  = "ON_DEMAND"
+
+  scaling_config {
+    desired_size = var.node_desired_size
+    max_size     = var.node_max_size
+    min_size     = var.node_min_size
+  }
+
+  update_config {
+    max_unavailable = 1
+  }
+
+  labels = {
+    "coder.com/workspaces" = "true"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.node_worker,
+    aws_iam_role_policy_attachment.node_cni,
+    aws_iam_role_policy_attachment.node_ecr,
+  ]
+
+  tags = {
+    Name = "${var.name}-node-group"
+  }
+}
+
+# EKS Add-ons (when Auto Mode is disabled, these must be managed manually)
+resource "aws_eks_addon" "vpc_cni" {
+  count = var.auto_mode ? 0 : 1
+
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "vpc-cni"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+}
+
+resource "aws_eks_addon" "kube_proxy" {
+  count = var.auto_mode ? 0 : 1
+
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "kube-proxy"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+}
+
+resource "aws_eks_addon" "coredns" {
+  count = var.auto_mode ? 0 : 1
+
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "coredns"
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  depends_on = [aws_eks_node_group.default]
+}
+
+resource "aws_eks_addon" "ebs_csi" {
+  count = var.auto_mode ? 0 : 1
+
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = "aws-ebs-csi-driver"
+  service_account_role_arn    = aws_iam_role.ebs_csi[0].arn
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  depends_on = [aws_eks_node_group.default]
+}
+
+# EBS CSI Driver IAM Role (for standard mode)
+resource "aws_iam_role" "ebs_csi" {
+  count = var.auto_mode ? 0 : 1
+  name  = "${var.name}-ebs-csi-driver"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Effect = "Allow"
+      Principal = {
+        Federated = aws_iam_openid_connect_provider.eks.arn
+      }
+      Condition = {
+        StringEquals = {
+          "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
+          "${replace(aws_eks_cluster.main.identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ebs_csi" {
+  count      = var.auto_mode ? 0 : 1
+  policy_arn = "arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.ebs_csi[0].name
 }
