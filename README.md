@@ -174,6 +174,7 @@ coder templates push ec2
 | Topic | Link |
 |-------|------|
 | EKS Auto Mode trade-offs, DinD, isolation, latency | [docs/eks-auto-mode.md](docs/eks-auto-mode.md) |
+| Scaling guidance and component sizing | [docs/scaling.md](docs/scaling.md) |
 | Observability stack and Grafana SSO | [docs/observability.md](docs/observability.md) |
 | Cost breakdown | [docs/cost-estimate.md](docs/cost-estimate.md) |
 | Upgrades, backups, teardown | [docs/maintenance.md](docs/maintenance.md) |
