@@ -18,6 +18,12 @@ variable "namespace" {
   default     = "coder-workspaces"
 }
 
+variable "cluster_name" {
+  type        = string
+  description = "Name of the EKS cluster (used for VPC lookup in EC2 templates)"
+  default     = "coder"
+}
+
 variable "auto_mode" {
   type        = bool
   description = "Whether the cluster uses EKS Auto Mode (affects storage class selection)"
@@ -260,18 +266,6 @@ resource "kubernetes_deployment_v1" "main" {
       }
 
       spec {
-        # Run on workspace nodes (works with both Auto Mode custom NodePool and standard node groups)
-        node_selector = {
-          "coder.com/workspaces" = "true"
-        }
-
-        toleration {
-          key      = "coder.com/workspaces"
-          operator = "Equal"
-          value    = "true"
-          effect   = "NoSchedule"
-        }
-
         security_context {
           run_as_user     = 1000
           fs_group        = 1000

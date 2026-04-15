@@ -22,8 +22,9 @@ variable "db_credentials_secret_arn" {
 }
 
 variable "instance_class" {
-  type    = string
-  default = "db.t3.small"
+  type        = string
+  description = "RDS instance class. Use db.m6i.large+ for production (non-burstable). db.t3.small for eval only."
+  default     = "db.m6i.large"
 }
 
 variable "allocated_storage" {

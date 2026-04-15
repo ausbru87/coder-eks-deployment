@@ -4,7 +4,7 @@
 
 The default configuration is designed for **small to mid-size teams of up to ~500 users** (assuming ~30% daily active). It aligns roughly with [Coder's validated 1K-user architecture](https://coder.com/docs/admin/infrastructure/validated-architectures/1k-users), though with a smaller RDS instance and burstable workspace defaults that limit the practical ceiling.
 
-Key bottleneck: **RDS `db.t3.small`** (2 vCPU, 2 GiB RAM, burstable). Coder recommends `db.m6i.large` (non-burstable) for deployments under 1,000 users.
+The default `db.m6i.large` (2 vCPU, 8 GiB RAM, non-burstable) aligns with Coder's validated architecture for deployments under 1,000 users.
 
 ### Default Component Sizing
 
@@ -12,7 +12,7 @@ Key bottleneck: **RDS `db.t3.small`** (2 vCPU, 2 GiB RAM, burstable). Coder reco
 |-----------|---------|----------------|
 | **Coder replicas** | 3 (zone-spread) | Handles API/dashboard/DERP proxy; ~1 vCPU per 250 users |
 | **Provisioner replicas** | 5 (external) | 5 concurrent workspace builds |
-| **RDS** | `db.t3.small`, 20–100 GB, Multi-AZ | Burstable; can exhaust CPU credits under sustained load |
+| **RDS** | `db.m6i.large`, 20–100 GB, Multi-AZ | Non-burstable; consistent performance under load |
 | **EKS** | Auto Mode (auto-scaling nodes) | No fixed node count; scales with pod demand |
 | **VPC** | /16 CIDR, 3 AZs, 3 NAT GWs | Supports thousands of pod IPs |
 | **Observability** | Loki SingleBinary (1 replica) | Demo-grade log storage; not distributed |
@@ -27,7 +27,7 @@ For small teams, evaluation, or cost-sensitive deployments:
 |---------|---------|--------------|----------------|
 | Coder replicas | 3 | 1 | `modules/coder/main.tf` → `replicaCount` |
 | Provisioner replicas | 5 | 2 | `03-day2/main.tf` → `var.provisioner_replicas` |
-| RDS instance class | `db.t3.small` | `db.t3.micro` | `modules/rds/main.tf` → `var.instance_class` |
+| RDS instance class | `db.m6i.large` | `db.t3.small` | `modules/rds/main.tf` → `var.instance_class` |
 | RDS Multi-AZ | `true` | `false` | `modules/rds/main.tf` → `multi_az` |
 | NAT Gateways | 3 (one per AZ) | 1 | `modules/vpc/main.tf` → use `single_nat_gateway` |
 | K8s workspace CPU | 4 cores | 2 cores | `templates/kubernetes/main.tf` → default option |
@@ -44,7 +44,7 @@ For larger teams, follow [Coder's validated architectures](https://coder.com/doc
 |---------|---------|----------|-----------|----------------|
 | Coder replicas | 3 | 3 | 4+ | `modules/coder/main.tf` → `replicaCount` |
 | Provisioner replicas | 5 | 10 | 20+ | `03-day2/main.tf` → `var.provisioner_replicas` |
-| RDS instance class | `db.t3.small` | `db.m6i.large` | `db.m6i.xlarge` | `modules/rds/main.tf` → `var.instance_class` |
+| RDS instance class | `db.m6i.large` | `db.m6i.large` | `db.m6i.xlarge` | `modules/rds/main.tf` → `var.instance_class` |
 | RDS storage | 20 GB | 100 GB | 500 GB+ | `modules/rds/main.tf` → `var.allocated_storage` |
 | Loki | SingleBinary | S3-backed distributed | S3-backed distributed | `modules/observability/main.tf` |
 | Workspace types | `t3.*` (burstable) | `m6i.*` / `c6i.*` | `m6i.*` / `c6i.*` | `templates/ec2/main.tf` |

@@ -148,8 +148,8 @@ variable "grafana_github_allowed_orgs" {
 
 variable "coder_version" {
   type        = string
-  description = "Coder Helm chart version"
-  default     = "2.28.6"
+  description = "Coder Helm chart version (set via TF_VAR_coder_version or root terragrunt.hcl)"
+  default     = "2.30.0"
 }
 
 # =============================================================================

@@ -18,6 +18,12 @@ variable "coder_namespace" {
   default = "coder"
 }
 
+variable "auto_mode" {
+  description = "Whether EKS Auto Mode is enabled. ALB Controller and Cluster Autoscaler roles are only created when false."
+  type        = bool
+  default     = true
+}
+
 data "aws_partition" "current" {}
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
@@ -223,7 +229,8 @@ resource "aws_iam_role_policy" "coder_provisioner_ec2" {
 # AWS Load Balancer Controller Role
 # =============================================================================
 resource "aws_iam_role" "alb_controller" {
-  name = "${var.name}-alb-controller"
+  count = var.auto_mode ? 0 : 1
+  name  = "${var.name}-alb-controller"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -244,12 +251,14 @@ resource "aws_iam_role" "alb_controller" {
 }
 
 resource "aws_iam_role_policy_attachment" "alb_controller" {
-  policy_arn = aws_iam_policy.alb_controller.arn
-  role       = aws_iam_role.alb_controller.name
+  count      = var.auto_mode ? 0 : 1
+  policy_arn = aws_iam_policy.alb_controller[0].arn
+  role       = aws_iam_role.alb_controller[0].name
 }
 
 resource "aws_iam_policy" "alb_controller" {
-  name = "${var.name}-alb-controller"
+  count = var.auto_mode ? 0 : 1
+  name  = "${var.name}-alb-controller"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -529,7 +538,8 @@ resource "aws_iam_role_policy" "external_secrets" {
 # Cluster Autoscaler Role
 # =============================================================================
 resource "aws_iam_role" "cluster_autoscaler" {
-  name = "${var.name}-cluster-autoscaler"
+  count = var.auto_mode ? 0 : 1
+  name  = "${var.name}-cluster-autoscaler"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -550,8 +560,9 @@ resource "aws_iam_role" "cluster_autoscaler" {
 }
 
 resource "aws_iam_role_policy" "cluster_autoscaler" {
-  name = "cluster-autoscaler-policy"
-  role = aws_iam_role.cluster_autoscaler.id
+  count = var.auto_mode ? 0 : 1
+  name  = "cluster-autoscaler-policy"
+  role  = aws_iam_role.cluster_autoscaler[0].id
 
   policy = jsonencode({
     Version = "2012-10-17"
