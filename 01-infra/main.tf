@@ -180,6 +180,7 @@ module "iam" {
   name              = local.name
   oidc_provider_arn = module.eks.oidc_provider_arn
   oidc_provider_url = module.eks.oidc_provider_url
+  auto_mode         = var.auto_mode
 }
 
 

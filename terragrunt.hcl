@@ -57,6 +57,7 @@ remote_state {
 
 # Inputs available to all child modules
 inputs = {
-  region   = get_env("TF_VAR_region", "us-west-2")
-  env_name = get_env("TF_VAR_env_name", "demo")
+  region        = get_env("TF_VAR_region", "us-west-2")
+  env_name      = get_env("TF_VAR_env_name", "demo")
+  coder_version = get_env("TF_VAR_coder_version", "2.30.0")
 }

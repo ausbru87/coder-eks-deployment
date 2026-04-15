@@ -29,8 +29,8 @@ variable "domain" {
 
 variable "coder_version" {
   type        = string
-  description = "Coder Helm chart version"
-  default     = "2.28.6"
+  description = "Coder Helm chart version (set via TF_VAR_coder_version or root terragrunt.hcl)"
+  default     = "2.30.0"
 }
 
 variable "wildcard_domain" {
@@ -354,6 +354,25 @@ resource "helm_release" "coder" {
 
       annotations = {
         "cluster-autoscaler.kubernetes.io/safe-to-evict" = "false"
+      }
+
+      resources = {
+        requests = {
+          cpu    = "2000m"
+          memory = "4Gi"
+        }
+        limits = {
+          cpu    = "4000m"
+          memory = "8Gi"
+        }
+      }
+
+      livenessProbe = {
+        enabled             = true
+        initialDelaySeconds = 30
+        periodSeconds       = 10
+        timeoutSeconds      = 3
+        failureThreshold    = 10
       }
 
       affinity = {

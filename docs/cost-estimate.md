@@ -8,7 +8,7 @@ Estimated monthly costs for the default deployment configuration.
 |-----------|------|-----------|
 | EKS Control Plane | 1 cluster | $72 |
 | EKS Nodes (Auto Mode) | Variable | ~$200-500 |
-| RDS | db.t3.small Multi-AZ | ~$50 |
+| RDS | db.m6i.large Multi-AZ | ~$120 |
 | NAT Gateways | 3x (HA) | ~$100 |
 | NLB | 2 (Coder + Grafana) | ~$40 |
 | **Base Total** | | **~$500/mo** |

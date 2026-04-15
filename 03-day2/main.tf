@@ -1,4 +1,4 @@
-# Stage 4: Day 2 Operations
+# Stage 3: Day 2 Operations
 # Post-deployment configuration requiring manual CODER_TOKEN
 #
 # Resources:
@@ -6,7 +6,7 @@
 #   - Provisioner Key
 #   - External Provisioner Helm release
 #
-# Depends on: 03-apps (Coder must be running)
+# Depends on: 02-apps (Coder must be running)
 # Requires: CODER_TOKEN environment variable
 #
 # This stage is auto-skipped by Terragrunt if CODER_TOKEN is not set
@@ -58,15 +58,14 @@ variable "license_key" {
 }
 
 variable "coder_version" {
-  description = "Coder Helm chart version"
   type        = string
-  default     = "2.28.6"
+  description = "Coder Helm chart version (set via TF_VAR_coder_version or root terragrunt.hcl)"
+  default     = "2.30.0"
 }
 
 variable "cluster_name" {
   description = "EKS cluster name"
   type        = string
-  default     = "fedtest-coder"
 }
 
 variable "region" {
@@ -194,6 +193,17 @@ resource "helm_release" "coder_provisioner" {
           value = var.coder_url
         },
       ]
+
+      resources = {
+        requests = {
+          cpu    = "1000m"
+          memory = "1Gi"
+        }
+        limits = {
+          cpu    = "1000m"
+          memory = "1Gi"
+        }
+      }
     }
 
     provisionerDaemon = {
