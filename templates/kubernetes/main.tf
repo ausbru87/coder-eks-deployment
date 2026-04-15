@@ -18,12 +18,6 @@ variable "namespace" {
   default     = "coder-workspaces"
 }
 
-variable "cluster_name" {
-  type        = string
-  description = "Name of the EKS cluster (used for VPC lookup in EC2 templates)"
-  default     = "coder"
-}
-
 variable "auto_mode" {
   type        = bool
   description = "Whether the cluster uses EKS Auto Mode (affects storage class selection)"

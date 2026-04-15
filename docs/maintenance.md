@@ -32,3 +32,11 @@ cd 01-infra && terragrunt destroy
 # Then remove state backend:
 ./scripts/create-tfstate-backend.sh --destroy
 ```
+
+> **Note:** Secrets Manager secrets use a 7-day recovery window. After `terraform destroy`,
+> secrets enter a "pending deletion" state for 7 days. If you re-deploy with the same
+> `env_name` within that window, Terraform will fail because the secret names are still
+> reserved. To force immediate deletion, use:
+> ```bash
+> aws secretsmanager delete-secret --secret-id "<secret-name>" --force-delete-without-recovery
+> ```

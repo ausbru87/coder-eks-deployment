@@ -168,6 +168,7 @@ resource "helm_release" "coder_observability" {
   name       = "coder-observability"
   repository = "https://helm.coder.com/observability"
   chart      = "coder-observability"
+  version    = "0.7.1"
   namespace  = kubernetes_namespace.observability.metadata[0].name
   timeout    = 900
 
