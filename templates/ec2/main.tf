@@ -27,12 +27,6 @@ variable "env_name" {
   default     = ""
 }
 
-variable "cluster_name" {
-  type        = string
-  description = "Name of the Coder deployment (must match VPC Name tag created by infrastructure)"
-  default     = "coder"
-}
-
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
 
@@ -98,9 +92,15 @@ data "aws_ami" "ubuntu" {
   }
 }
 
+locals {
+  # Match the naming convention used by the infrastructure stage
+  # (01-infra/variables.tf): "${env_name}-coder" or "coder" when empty.
+  vpc_name = var.env_name != "" ? "${var.env_name}-coder" : "coder"
+}
+
 data "aws_vpc" "selected" {
   tags = {
-    Name = var.cluster_name
+    Name = local.vpc_name
   }
 }
 

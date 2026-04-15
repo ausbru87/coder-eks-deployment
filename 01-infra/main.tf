@@ -44,7 +44,7 @@ resource "random_password" "db_password" {
 
 resource "aws_secretsmanager_secret" "db_credentials" {
   name                    = "${local.name}/db-credentials"
-  recovery_window_in_days = 0
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {
@@ -57,7 +57,7 @@ resource "aws_secretsmanager_secret_version" "db_credentials" {
 
 resource "aws_secretsmanager_secret" "github_oauth" {
   name                    = "${local.name}/github-oauth"
-  recovery_window_in_days = 0
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "github_oauth" {
@@ -72,7 +72,7 @@ resource "aws_secretsmanager_secret_version" "github_oauth" {
 resource "aws_secretsmanager_secret" "grafana_github_oauth" {
   count                   = var.grafana_github_oauth_client_id != "" ? 1 : 0
   name                    = "${local.name}/grafana-github-oauth"
-  recovery_window_in_days = 0
+  recovery_window_in_days = 7
 }
 
 resource "aws_secretsmanager_secret_version" "grafana_github_oauth" {
