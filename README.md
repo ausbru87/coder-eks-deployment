@@ -1,6 +1,6 @@
 # AWS Deployment
 
-Production-ready Coder deployment on AWS with EKS, RDS, and full observability.
+Proof of Concept Coder deployment on AWS with EKS, RDS, and full observability.
 
 ## Features
 
